@@ -36,14 +36,18 @@ discover
     -> Manager
     -> IO Provider
 discover location manager = do
+    print "get conf"
     conf <- getConfiguration `catch` rethrow
+    print ("use conf", conf)
     case conf of
         Just c  -> Provider c . jwks <$> getJwkSetJson (jwksUri c) `catch` rethrow
         Nothing -> throwM $ DiscoveryException "failed to decode configuration"
   where
+    getConfiguration :: IO (Maybe Configuration)
     getConfiguration = do
         req <- parseUrl (location `append` "/.well-known/openid-configuration")
         res <- httpLbs req manager
+        print ("response is ", responseBody res)
         return $ decode $ responseBody res
     getJwkSetJson url = do
         req <- parseUrl url

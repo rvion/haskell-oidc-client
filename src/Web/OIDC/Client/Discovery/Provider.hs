@@ -12,7 +12,7 @@ module Web.OIDC.Client.Discovery.Provider
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (mzero)
-import Data.Aeson (FromJSON, parseJSON, Value(..), (.:))
+import Data.Aeson (FromJSON, parseJSON, Value(..), (.:), (.:?))
 import Data.Text (Text)
 import Jose.Jwk (Jwk)
 
@@ -27,14 +27,15 @@ data Configuration = Configuration
     , authorizationEndpoint             :: Text
     , tokenEndpoint                     :: Text
     , userinfoEndpoint                  :: Text
-    , revocationEndpoint                :: Text
+    , revocationEndpoint                :: Maybe Text
     , jwksUri                           :: Text
     , responseTypesSupported            :: [Text]
     , subjectTypesSupported             :: [Text]
     , idTokenSigningAlgValuesSupported  :: [Text]
-    , scopesSupported                   :: [ScopeValue]
-    , tokenEndpointAuthMethodsSupported :: [Text]
-    , claimsSupported                   :: [Text]
+    , scopesSupported                   :: Maybe [ScopeValue]
+    , tokenEndpointAuthMethodsSupported :: Maybe [Text]
+    , claimsSupported                   :: Maybe [Text]
+    , registrationEndpoint              :: Maybe Text
     }
   deriving (Show, Eq)
 
@@ -44,12 +45,13 @@ instance FromJSON Configuration where
         <*> o .: "authorization_endpoint"
         <*> o .: "token_endpoint"
         <*> o .: "userinfo_endpoint"
-        <*> o .: "revocation_endpoint"
+        <*> o .:? "revocation_endpoint"
         <*> o .: "jwks_uri"
         <*> o .: "response_types_supported"
         <*> o .: "subject_types_supported"
         <*> o .: "id_token_signing_alg_values_supported"
-        <*> o .: "scopes_supported"
-        <*> o .: "token_endpoint_auth_methods_supported"
-        <*> o .: "claims_supported"
+        <*> o .:? "scopes_supported"
+        <*> o .:? "token_endpoint_auth_methods_supported"
+        <*> o .:? "claims_supported"
+        <*> o .:? "registration_endpoint"
     parseJSON _ = mzero
